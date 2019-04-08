@@ -115,7 +115,7 @@ def mutation(p, mode="all", prob=10, binary_rep=True):
     gen = p[0]
     if binary_rep:
         gen = fen_to_int(gen)
-    #print(gen)
+        #print(gen)
 
     if mode == "all":
         for i in range(len(gen)):
@@ -259,11 +259,11 @@ def crossover(parent1, parent2, binary_rep=True, mode="one_cut", cut=4):
     return response
 
 
-def main():
+def main2():
     population = init_population(perm=True,binary_rep=False)
 
     for i in range(10000):
-        population.sort(reverse=True, key=lambda x: x[2])
+        population.sort(reverse=True, key=lambda x: x[1])
         parents = parent_selection(population)
         childs = crossover(parents[0][0], parents[1][0], binary_rep=False)
         for child in childs:
@@ -278,7 +278,47 @@ def main():
                 return
         population[len(population)-len(childs):] = childs
         
+
+
+def modelo1():
+    population = init_population(perm=True, binary_rep=False)
+    results = []
+
+    for p in population:
+        if p[1] == 1:
+            return(0, p[2])
+
+    for i in range(10000):
+        population.sort(reverse=True, key=lambda x: x[1])
+        parents = parent_selection(population, mode="random_elitismo")
+        r = randint(0, 10)
+        if r < 1:
+            childs = crossover(parents[0][0], parents[1][0], binary_rep=False)
+            for child in childs:
+                if child[1] == 1:
+                    return (i, child[2])
+                child = mutation(child, mode="one", prob=40, binary_rep=False)
+                if child[1] == 1:
+                    return (i, child[2])
             
+            population[len(population)-len(childs):] = childs
+    #print(results) 
+
+    return (10000, "n")
+
+def main():
+    generations = []
+    tipo = []
+    for i in range(100):
+        response = modelo1()
+        generations.append(response[0])
+        tipo.append(response[1])
+
+    print("Iterações Médias: {}\nSoluções por recombinação: {}\nSoluções por mutação: {}\nSoluções na inicialização: {}".format(sum(generations)/100, tipo.count("c"), tipo.count("m"), tipo.count("p")))
+    arq = open("out_modelo1", 'w')
+    for i in range(len(generations)):
+        arq.write("{} , {}\n".format(generations[i], tipo[i]))
+
 
 
 if __name__ == "__main__":

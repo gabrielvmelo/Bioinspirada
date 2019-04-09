@@ -225,7 +225,7 @@ def crossover(parent1, parent2, binary_rep=True, mode="one_cut", cut=4):
             child1.append(-1)
             child2.append(-1)
         r = randint(0, 7)
-        print(r)
+        #print(r)
         child1[r:r+cut] = parent1[r:r+cut]
         child2[r:r+cut] = parent2[r:r+cut]
         l1 = parent2[r+cut:] + parent2[:r+cut]
@@ -292,7 +292,7 @@ def modelo1():
         population.sort(reverse=True, key=lambda x: x[1])
         parents = parent_selection(population, mode="random_elitismo")
         r = randint(0, 10)
-        if r < 1:
+        if r > 1:
             childs = crossover(parents[0][0], parents[1][0], binary_rep=False)
             for child in childs:
                 if child[1] == 1:
@@ -306,18 +306,132 @@ def modelo1():
 
     return (10000, "n")
 
+
+def modelo0():
+    population = init_population(perm=True, binary_rep=False)
+    total = 0
+    results = []
+
+    for p in population:
+        if p[1] == 1:
+            results.append((0, p[2]))
+            total += 1
+
+    for i in range(10000):
+        population.sort(reverse=True, key=lambda x: x[1])
+        parents = parent_selection(population, mode="random_elitismo", sub_set=5)
+        r = randint(0, 10)
+        if r > 1:
+            childs = crossover(parents[0][0], parents[1][0], binary_rep=False)
+            for child in childs:
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                    #total += 1
+                child = mutation(child, mode="one", binary_rep=False)
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                #total += 1
+            population[len(population)-len(childs):] = childs
+
+    #total = 0
+    for p in population:
+        if p[1] == 1:
+            total += 1
+    if results == []:
+        return (10000, "n", total)
+
+    if total == 0:
+        total = 1
+
+    return (results[0][0], results[0][1], total)
+
+
+def modelo2():
+    population = init_population(perm=True, binary_rep=False)
+    total = 0
+    results = []
+
+    for p in population:
+        if p[1] == 1:
+            results.append((0, p[2]))
+            total += 1
+
+    for i in range(10000):
+        population.sort(reverse=True, key=lambda x: x[1])
+        parents = parent_selection(population, mode="roleta", sub_set=10)
+        r = randint(0, 10)
+        if r > 1:
+            childs = crossover(parents[0][0], parents[1][0], binary_rep=False, mode="ordem1")
+            for child in childs:
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                    #total += 1
+                child = mutation(child, mode="disturb", binary_rep=False)
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                total += 1
+            population[len(population)-len(childs):] = childs
+
+    total = 0
+    for p in population:
+        if p[1] == 1:
+            total += 1
+
+    return (results[0][0], results[0][1], total)
+
+
+def modelo3():
+    population = init_population(perm=True, binary_rep=False)
+    total = 0
+    results = []
+
+    for p in population:
+        if p[1] == 1:
+            results.append((0, p[2]))
+            total += 1
+
+    for i in range(10000):
+        population.sort(reverse=True, key=lambda x: x[1])
+        parents = parent_selection(population, mode="elitismo")
+        r = randint(0, 10)
+        if r > 1:
+            childs = crossover(parents[0][0], parents[1][0], binary_rep=False, mode="ordem1")
+            for child in childs:
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                    #total += 1
+                child = mutation(child, mode="all", binary_rep=False, prob=30)
+                if child[1] == 1:
+                    results.append((i, child[2]))
+                total += 1
+            population[len(population)-len(childs):] = childs
+
+    total = 0
+    for p in population:
+        if p[1] == 1:
+            total += 1
+
+    return (results[0][0], results[0][1], total)
+
 def main():
     generations = []
     tipo = []
+    total = []
     for i in range(100):
-        response = modelo1()
+        response = modelo3()
+        print(response)
         generations.append(response[0])
         tipo.append(response[1])
+        total.append(response[2])
 
-    print("Iterações Médias: {}\nSoluções por recombinação: {}\nSoluções por mutação: {}\nSoluções na inicialização: {}".format(sum(generations)/100, tipo.count("c"), tipo.count("m"), tipo.count("p")))
-    arq = open("out_modelo1", 'w')
+    print("Iterações Médias: {}".format(sum(generations)/100))
+    print("Soluções por recombinação: {}".format(tipo.count("c")))
+    print("Soluções por mutação: {}".format(tipo.count("m")))
+    print("Soluções na inicialização: {}".format(tipo.count("p")))
+    print("Convergência Média: {}".format(sum(total)/100))
+    arq = open("out_modelo_melhorado_2", 'w')
     for i in range(len(generations)):
-        arq.write("{} , {}\n".format(generations[i], tipo[i]))
+        arq.write("{} , {}, {}\n".format(generations[i], tipo[i], total[i]))
 
 
 

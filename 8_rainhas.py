@@ -259,6 +259,19 @@ def crossover(parent1, parent2, binary_rep=True, mode="one_cut", cut=4):
     return response
 
 
+
+def ger_prole(parents, binary_rep=True, mode="one_cut", cut=4):
+    childs = []
+    for p in parents:
+        r = randint(0, len(parents)-1)
+        #print(p)
+        #print(parents[r])
+        new_kids = crossover(p[0], parents[r][0], binary_rep=binary_rep, cut=cut)
+        childs += new_kids
+
+    return childs
+
+
 def main2():
     population = init_population(perm=True,binary_rep=False)
 
@@ -413,26 +426,58 @@ def modelo3():
 
     return (results[0][0], results[0][1], total)
 
+
+def modelo1_2():
+    population = init_population(perm=True, binary_rep=False)
+    results = []
+
+    for p in population:
+        if p[1] == 1:
+            return(0, p[2])
+
+    for i in range(10000):
+        population.sort(reverse=True, key=lambda x: x[1])
+        parents = parent_selection(population, mode="random_elitismo", n_parents=10, sub_set=20)
+        r = randint(0, 10)
+        if r > 1:
+            #childs = crossover(parents[0][0], parents[1][0], binary_rep=False)
+            childs = ger_prole(parents, binary_rep=False, mode="ordem1")
+            for child in childs:
+                #print("Childs")
+                #print(child)
+                if child[1] == 1:
+                    return (i, child[2])
+                child = mutation(child, mode="one", prob=10, binary_rep=False)
+                if child[1] == 1:
+                    return (i, child[2])
+            
+            population[len(population)-len(childs):] = childs
+    #print(results) 
+
+    return (10000, "n")
+
+
+
 def main():
     generations = []
     tipo = []
     total = []
     for i in range(100):
-        response = modelo3()
+        response = modelo1_2()
         print(response)
         generations.append(response[0])
         tipo.append(response[1])
-        total.append(response[2])
+        #total.append(response[2])
 
     print("Iterações Médias: {}".format(sum(generations)/100))
     print("Soluções por recombinação: {}".format(tipo.count("c")))
     print("Soluções por mutação: {}".format(tipo.count("m")))
     print("Soluções na inicialização: {}".format(tipo.count("p")))
-    print("Convergência Média: {}".format(sum(total)/100))
-    arq = open("out_modelo_melhorado_2", 'w')
+    #print("Convergência Média: {}".format(sum(total)/100))
+    arq = open("out_modelo_melhorado_3_1", 'w')
     for i in range(len(generations)):
-        arq.write("{} , {}, {}\n".format(generations[i], tipo[i], total[i]))
-
+        #arq.write("{} , {}, {}\n".format(generations[i], tipo[i], total[i]))
+        arq.write("{} , {}\n".format(generations[i], tipo[i]))
 
 
 if __name__ == "__main__":
